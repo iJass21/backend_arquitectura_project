@@ -1,6 +1,11 @@
+from django.http import JsonResponse
 from rest_framework import viewsets
 from .models import User, Project, Comment, Like, ProjectMember, Reference, File, ProjectFile, Tag, ProjectTag
 from .serializers import UserSerializer, ProjectSerializer, CommentSerializer, LikeSerializer, ProjectMemberSerializer, ReferenceSerializer, FileSerializer, ProjectFileSerializer, TagSerializer, ProjectTagSerializer
+
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
