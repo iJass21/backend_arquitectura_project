@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, ProjectViewSet, CommentViewSet, LikeViewSet, ProjectMemberViewSet, ReferenceViewSet, FileViewSet, ProjectFileViewSet, TagViewSet, ProjectTagViewSet
+from .views import UserViewSet, ProjectViewSet, CommentViewSet, LikeViewSet, ProjectMemberViewSet, ReferenceViewSet, FileViewSet, ProjectFileViewSet, TagViewSet, ProjectTagViewSet, UserRegisterView, UserLoginView, ChangePasswordView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -16,4 +16,7 @@ router.register(r'project-tags', ProjectTagViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('users/register/', UserRegisterView.as_view({'post': 'register'})),
+    path('users/login/', UserLoginView.as_view({'post': 'login'})),
+    path('auth/change-password/', ChangePasswordView.as_view({'post': 'change_password'})),
 ]
