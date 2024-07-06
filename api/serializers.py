@@ -6,10 +6,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'name', 'lastname', 'role', 'created_at', 'active']
 
-class ProjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Project
-        fields = ['id', 'name', 'owner', 'description', 'created_at', 'portrait', 'active']
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,3 +47,16 @@ class ProjectTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectTag
         fields = ['id', 'project', 'tag', 'active']
+        
+class ProjectSerializer(serializers.ModelSerializer):
+    project_files = ProjectFileSerializer(many=True, read_only=True)
+    project_members = ProjectMemberSerializer(many=True, read_only=True)
+    project_tags = ProjectTagSerializer(many=True, read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            'id', 'name', 'owner', 'description', 'created_at', 'active',
+            'project_files', 'project_members', 'project_tags', 'comments'
+        ]
