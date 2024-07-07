@@ -29,4 +29,10 @@ urlpatterns = [
     path('users/register/', UserRegisterView.as_view({'post': 'register'})),
     path('users/login/', UserLoginView.as_view({'post': 'login'})),
     path('auth/change-password/', ChangePasswordView.as_view({'post': 'change_password'})),
+    path('users/', UserViewSet.get_all_users, name='get_all_users'),
+    path('users/create/', UserViewSet.create_user, name='create_user'),
+    path('users/update/<int:user_id>/', UserViewSet.update_user, name='update_user'),
+    path('users/delete/<int:user_id>/', UserViewSet.delete_user, name='delete_user'),
+    path('users/login/', UserViewSet.login_user, name='login_user'),
+    path('users/change-password/<int:user_id>/', UserViewSet.change_password, name='change_password'),
 ]

@@ -7,7 +7,7 @@ from .serializers import UserSerializer, ProjectSerializer, CommentSerializer, L
 from api.services.file_service import FileService
 from api.services.project_service import ProjectService
 from api.services.comment_service import CommentsService
-
+from api.services.user_service import UserService
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
@@ -15,6 +15,50 @@ def health_check(request):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def list(self, request):
+        users = UserService.get_all_users()
+        serializer = self.get_serializer(users, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        user = UserService.create_user(request.data)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None):
+        user = UserService.update_user(pk, request.data)
+        if user:
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        result = UserService.delete_user(pk)
+        if result:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['post'])
+    def register(self, request):
+        user = UserService.create_user(request.data)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        user = UserService.login(request.data)
+        if user:
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @action(detail=True, methods=['post'])
+    def change_password(self, request, pk=None):
+        result = UserService.change_password(pk, request.data['new_password'])
+        if result:
+            return Response({'message': 'Password updated successfully'})
+        return Response({'error': 'Update failed'}, status=status.HTTP_400_BAD_REQUEST)
 class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
@@ -47,12 +91,6 @@ class UserRegisterView(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Vista para login de usuario (puede necesitar implementación específica dependiendo del sistema de autenticación)
-class UserLoginView(viewsets.ViewSet):
-    @action(detail=False, methods=['post'])
-    def login(self, request):
-        # Implementa lógica de login aquí
-        pass
 class CommentViewSet(viewsets.ViewSet):
     def create(self, request):
         comment = CommentsService.addComment(request.data['project'], request.data)
