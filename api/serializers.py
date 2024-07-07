@@ -56,6 +56,7 @@ class TagSerializer(serializers.ModelSerializer):
         return value
 
 class ProjectTagSerializer(serializers.ModelSerializer):
+    tag = TagSerializer(read_only=True)
     class Meta:
         model = ProjectTag
         fields = ['id', 'project', 'tag', 'active']

@@ -8,6 +8,7 @@ from api.services.file_service import FileService
 from api.services.project_service import ProjectService
 from api.services.comment_service import CommentsService
 from api.services.tag_service import TagService
+from api.services.project_tag_service import ProjectTagService
 from rest_framework.exceptions import ValidationError
 
 
@@ -165,13 +166,18 @@ class ProjectViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get', 'post'])
     def tags(self, request, pk=None):
-        tags = ProjectService.getProjectTags(pk)
-        return Response(tags)
+        if request.method == 'POST':
+            tag = ProjectTagService.add_project_tag(request.data)
+            return Response(TagSerializer(tag).data, status=status.HTTP_201_CREATED)
+        elif request.method == 'GET':   
+            tags = ProjectService.getProjectTags(pk)
+            return Response(ProjectTagSerializer(tags, many=True).data, status=status.HTTP_200_OK)
+
 
     @action(detail=False, methods=['get'])
-    def projects_and_tags(self, request):
+    def projects_tags(self, request):
         projects_and_tags = ProjectService.getProjectsAndTags()
         return Response(projects_and_tags)
 

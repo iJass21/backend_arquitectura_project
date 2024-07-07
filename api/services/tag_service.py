@@ -1,4 +1,4 @@
-# api/services/tag_service.py
+#
 from api.repositories.tag_repository import TagRepository
 
 class TagService:
