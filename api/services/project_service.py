@@ -15,10 +15,10 @@ class ProjectService:
 
     @staticmethod
     def createProject(projectData):
-        projectData = projectData.copy()
-        owner_id = projectData['owner']
-        owner = User.objects.get(id=owner_id)
-        projectData['owner'] = owner
+        # projectData = projectData.copy()
+        # owner_id = projectData['owner']
+        # owner = User.objects.get(id=owner_id)
+        # projectData['owner'] = owner
         return ProjectRepository.create(projectData)
 
     @staticmethod

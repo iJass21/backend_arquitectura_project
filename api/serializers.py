@@ -1,5 +1,52 @@
 from rest_framework import serializers
-from .models import User, Project, Comment, Like, ProjectMember, Reference, File, ProjectFile, Tag, ProjectTag
+from .models import  Project, Comment, Like, ProjectMember, Reference, File, ProjectFile, Tag, ProjectTag
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+
+
+
+
+User = get_user_model()
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'name', 'lastname', 'password', 'role']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            name=validated_data['name'],
+            lastname=validated_data['lastname'],
+            password=validated_data['password'],
+            role=validated_data['role']
+        )
+        return user
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    access = serializers.CharField(read_only=True)
+    refresh = serializers.CharField(read_only=True)
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        user = authenticate(email=email, password=password)
+
+        if user and user.is_active:
+            refresh = RefreshToken.for_user(user)
+            return {
+                'email': user.email,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }
+        raise serializers.ValidationError("Credenciales inválidas, intente de nuevo.")
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,10 +55,12 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'active']
 
 class CommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
     class Meta:
         model = Comment
         fields = ['id', 'project', 'user', 'content', 'created_at', 'active']
-        read_only_fields = ['id', 'created_at', 'active']
+        read_only_fields = ['id', 'created_at', 'active', 'user']
 
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:

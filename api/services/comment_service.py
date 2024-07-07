@@ -1,11 +1,18 @@
 # api/services/comment_service.py
 from api.repositories.comment_repository import CommentsRepository
+from api.models import Comment, Project, User
 
 class CommentsService:
     @staticmethod
-    def addComment(projectId, commentData):
-        commentData['project_id'] = projectId
-        return CommentsRepository.create(commentData)
+    def addComment(project_id, data):
+        project = Project.objects.get(id=project_id)
+        # user = User.objects.get(id=data['user'])
+        comment = Comment.objects.create(
+            project=project,
+            user=data['user'],
+            content=data['content']
+        )
+        return comment
 
     @staticmethod
     def updateComment(commentId, commentData):
