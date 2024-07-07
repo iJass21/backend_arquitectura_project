@@ -11,7 +11,7 @@ router.register(r'project-members', ProjectMemberViewSet)
 router.register(r'references', ReferenceViewSet)
 # router.register(r'files', FileViewSet)
 # router.register(r'project-files', ProjectFileViewSet)
-router.register(r'tags', TagViewSet)
+router.register(r'tags', TagViewSet, basename='tags')
 router.register(r'project-tags', ProjectTagViewSet)
 
 

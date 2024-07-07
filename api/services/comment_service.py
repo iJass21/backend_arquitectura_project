@@ -18,3 +18,7 @@ class CommentsService:
     @staticmethod
     def deactivateComment(commentId):
         return CommentsRepository.deactivate(commentId)
+    
+    @staticmethod
+    def getComments(projectId):
+        return CommentsRepository.findByProjectId(projectId)

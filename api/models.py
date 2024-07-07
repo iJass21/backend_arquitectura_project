@@ -119,7 +119,7 @@ class ProjectFile(models.Model):
 
 # Tags Model
 class Tag(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
 
     def __str__(self):

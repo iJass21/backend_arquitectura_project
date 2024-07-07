@@ -1,3 +1,4 @@
+# api/services/file_service.py
 from api.repositories.file_repository import FileRepository
 
 class FileService:
@@ -6,8 +7,12 @@ class FileService:
         return FileRepository.findById(fileId)
 
     @staticmethod
-    def uploadFile(fileData):
-        return FileRepository.create(fileData)
+    def getProjectFiles(projectId):
+        return FileRepository.findByProjectId(projectId)
+
+    @staticmethod
+    def uploadFile(fileData, fileContent):
+        return FileRepository.create(fileData, fileContent)
 
     @staticmethod
     def deleteFile(fileId):
