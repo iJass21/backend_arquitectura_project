@@ -28,3 +28,7 @@ class CommentsRepository:
     @staticmethod
     def findById(commentId):
         return Comment.objects.get(id=commentId)
+
+    @staticmethod
+    def findByProjectId(projectId): 
+        return Comment.objects.all().filter(project_id=projectId)
