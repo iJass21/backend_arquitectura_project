@@ -9,8 +9,8 @@ urlpatterns = [
     path('', health_check),
     path("admin/", admin.site.urls),
     path("api/v1/", include('api.urls')),
-    path('docs/', include_docs_urls(title='Api Documentation')),
-]
+    path('docs/', include_docs_urls(title='Api Documentation'))
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
