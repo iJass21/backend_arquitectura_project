@@ -314,3 +314,9 @@ class FileViewSet(viewsets.ViewSet):
 
         serializer = FileSerializer(file)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    @handle_exceptions
+    def list(self, request):
+        files = FileService.getAllFiles()
+        serializer = FileSerializer(files, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
