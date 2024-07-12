@@ -14,7 +14,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['54.161.199.136', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['apuntesudp.proliftapp.cl', 'www.apuntesudp.proliftapp.cl', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -45,7 +45,10 @@ MIDDLEWARE = [
 ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://apuntesudp.proliftapp.cl",
+    "https://www.apuntesudp.proliftapp.cl",
 ]
+
 
 ROOT_URLCONF = "drf.urls"
 
