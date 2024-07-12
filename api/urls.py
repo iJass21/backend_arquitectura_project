@@ -22,7 +22,7 @@ router.register(r'users', UserViewSet, basename='user')
 urlpatterns = [
     path('', include(router.urls)),
     path('users/register/', UserRegisterView.as_view({'post': 'register'})),
-    path('users/login/', UserLoginView.as_view({'post': 'login'})),
+    path('auth-users/login/', UserLoginView.as_view({'post': 'login'})),
     path('auth/change-password/', ChangePasswordView.as_view({'post': 'change_password'})),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('projects/<int:project>/members/', ProjectMemberViewSet.as_view({
