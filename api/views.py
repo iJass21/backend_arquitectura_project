@@ -191,8 +191,9 @@ class ProjectViewSet(viewsets.ViewSet):
             data['owner'] = request.user.id  # Asigna el ID del usuario autenticado al campo 'owner' del serializer
         serializer = ProjectSerializer(data=data)
         if serializer.is_valid():
-            print(serializer.validated_data)
-            project = ProjectService.createProject(serializer.validated_data)
+            full_data = serializer.validated_data
+            full_data['portrait_file_id'] = data['portrait_file']
+            project = ProjectService.createProject(full_data)
             return Response(ProjectSerializer(project).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
