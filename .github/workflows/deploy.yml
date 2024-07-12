@@ -33,17 +33,22 @@ jobs:
           echo "AWS_PEM_KEY is set"
           echo "AWS_HOST is set to ${{ vars.AWS_HOST }}"
 
+      - name: Create SSH Key File
+        run: |
+          echo "${{ secrets.AWS_PEM_KEY }}" > key.pem
+          chmod 600 key.pem
+          cat key.pem
+
       - name: Deploy to EC2
         env:
           AWS_PEM_KEY: ${{ secrets.AWS_PEM_KEY }}
           AWS_HOST: ${{ vars.AWS_HOST }}
         run: |
-          echo "${{ secrets.AWS_PEM_KEY }}" > key.pem
-          chmod 600 key.pem
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ vars.AWS_HOST }} << 'EOF'
             cd /home/ubuntu/backend_arquitectura_project
             git pull origin main
             pipenv install --python 3.12 --deploy --ignore-pipfile
             pipenv run python manage.py migrate
+            sudo systemctl restart django
             sudo systemctl restart apache2
           EOF
