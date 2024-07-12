@@ -47,7 +47,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://apuntesudp.proliftapp.cl",
     "https://www.apuntesudp.proliftapp.cl",
-    "https://apuntes-udp-front.pages.dev/"
+    "https://apuntes-udp-front.pages.dev",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
