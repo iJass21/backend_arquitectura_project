@@ -29,7 +29,9 @@ urlpatterns = [
         'get': 'list',
         'post': 'create'
     }), name='project-members-list'),
-
+    path('projects/<int:project>/members/<int:pk>/', ProjectMemberViewSet.as_view({
+        'delete': 'destroy'
+    }), name='project-member-detail'),
     # path('users/', UserViewSet.get_all_users, name='get_all_users'),
     # path('users/create/', UserViewSet.create_user, name='create_user'),
     # path('users/update/<int:user_id>/', UserViewSet.update_user, name='update_user'),

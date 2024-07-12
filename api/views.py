@@ -57,6 +57,14 @@ class UserViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(user)
         return Response(serializer.data)
+    @action(detail=False, methods=['get'], url_path='me')
+    def current_user(self, request):
+        """
+        Return the current user's profile.
+        """
+        serializer = self.get_serializer(request.user)
+        print(serializer.data)
+        return Response(serializer.data)
     # @action(detail=False, methods=['post'])
     # def register(self, request):
     #     user = UserService.create_user(request.data)
@@ -112,8 +120,8 @@ class ProjectMemberViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, pk=None):
-        project_member = get_object_or_404(ProjectMember, pk=pk)
+    def destroy(self, request, project=None, pk=None):
+        project_member = get_object_or_404(ProjectMember, project_id=project, pk=pk)
         project = project_member.project
         
         # Permitir que el usuario elimine su propia membresía o que otros miembros lo hagan, excepto el dueño
