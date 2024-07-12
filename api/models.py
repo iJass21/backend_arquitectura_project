@@ -55,6 +55,13 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return self.is_admin
+# Files Model
+class File(models.Model):
+    route = models.CharField(max_length=255)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f'File at {self.route}'
 # Projects Model
 class Project(models.Model):
     name = models.CharField(max_length=100)
@@ -62,6 +69,7 @@ class Project(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     portrait = models.ImageField(upload_to='projects/images/', null=True, blank=True)
+    portrait_file = models.ForeignKey(File, related_name='project_portraits', on_delete=models.CASCADE, null=True, blank=True)
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -106,13 +114,7 @@ class Reference(models.Model):
     def __str__(self):
         return f'Reference for {self.project.name}'
 
-# Files Model
-class File(models.Model):
-    route = models.CharField(max_length=255)
-    active = models.BooleanField(default=True)
 
-    def __str__(self):
-        return f'File at {self.route}'
 
 # Project Files Model
 class ProjectFile(models.Model):
