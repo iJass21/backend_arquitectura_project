@@ -120,7 +120,7 @@ class ProjectMemberViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, project=None, pk=None):
+        '''def destroy(self, request, project=None, pk=None):
         project_member = get_object_or_404(ProjectMember, project_id=project, pk=pk)
         project = project_member.project
         
@@ -128,7 +128,17 @@ class ProjectMemberViewSet(viewsets.ModelViewSet):
         if request.user == project_member.user or (request.user == project.owner and request.user != project_member.user):
             project_member.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({'error': 'You do not have permission to remove this member'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'You do not have permission to remove this member'}, status=status.HTTP_403_FORBIDDEN)'''
+    def destroy(self, request, *args, **kwargs):
+        member_id = kwargs.get('pk')
+        print("Member ID:", member_id)
+        try:
+            project_member = ProjectMember.objects.get(id=member_id)
+            project_member.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ProjectMember.DoesNotExist:
+            return Response({'error': 'ProjectMember not found'}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 class ReferenceViewSet(viewsets.ModelViewSet):
