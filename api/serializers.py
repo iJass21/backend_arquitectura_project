@@ -119,7 +119,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     portrait_file = FileSerializer(read_only=True)
     reference = ReferenceSerializer(read_only=True)
 
-
     class Meta:
         model = Project
         fields = [
@@ -127,3 +126,12 @@ class ProjectSerializer(serializers.ModelSerializer):
             'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file', 'reference'
         ]
         read_only_fields = ['id', 'created_at', 'active']
+
+    def update(self, instance, validated_data):
+        portrait_file_data = validated_data.pop('portrait_file', None)
+
+        if portrait_file_data:
+            instance.portrait_file = portrait_file_data
+
+        instance = super().update(instance, validated_data)
+        return instance

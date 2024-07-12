@@ -28,7 +28,12 @@ class ProjectService:
             owner_id = projectData.pop('owner')
             owner = User.objects.get(id=owner_id)
             projectData['owner'] = owner
+        if 'portrait_file' in projectData:
+            portrait_file_id = projectData.pop('portrait_file')
+            projectData['portrait_file_id'] = portrait_file_id  # Asignar el ID del archivo en lugar del objeto
         return ProjectRepository.update(projectId, projectData)
+
+
 
     @staticmethod
     def deleteProject(projectId):
