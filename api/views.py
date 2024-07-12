@@ -45,7 +45,18 @@ class UserViewSet(viewsets.ModelViewSet):
         if result:
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
+    @action(detail=False, methods=['get'], url_path='by-email')
+    def user_by_email(self, request):
+        email = request.query_params.get('email')
+        if not email:
+            return Response({"error": "Email parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = self.queryset.filter(email=email).first()
+        if not user:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
     # @action(detail=False, methods=['post'])
     # def register(self, request):
     #     user = UserService.create_user(request.data)
