@@ -23,6 +23,10 @@ urlpatterns = [
     path('users/login/', UserLoginView.as_view({'post': 'login'})),
     path('auth/change-password/', ChangePasswordView.as_view({'post': 'change_password'})),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('projects/<int:project>/members/', ProjectMemberViewSet.as_view({
+        'get': 'list',
+        'post': 'create'
+    }), name='project-members-list'),
 
     # path('users/', UserViewSet.get_all_users, name='get_all_users'),
     # path('users/create/', UserViewSet.create_user, name='create_user'),
