@@ -28,21 +28,23 @@ jobs:
       #   run: |
       #     pipenv run python manage.py test
 
-      - name: Debug Environment Variables
-        run: |
-          echo "AWS_PEM_KEY is set"
-          echo "AWS_HOST is set to ${{ vars.AWS_HOST }}"
-
       - name: Create SSH Key File
         run: |
           echo "${{ secrets.AWS_PEM_KEY }}" > key.pem
           chmod 600 key.pem
+          ls -l key.pem
           cat key.pem
 
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.AWS_PEM_KEY }}
+
+      - name: Test SSH Connectivity
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ vars.AWS_HOST }} "echo 'SSH Connection Successful'"
+
       - name: Deploy to EC2
-        env:
-          AWS_PEM_KEY: ${{ secrets.AWS_PEM_KEY }}
-          AWS_HOST: ${{ vars.AWS_HOST }}
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ vars.AWS_HOST }} << 'EOF'
             cd /home/ubuntu/backend_arquitectura_project
