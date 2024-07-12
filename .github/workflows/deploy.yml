@@ -28,14 +28,19 @@ jobs:
       #   run: |
       #     pipenv run python manage.py test
 
+      - name: Debug Environment Variables
+        run: |
+          echo "AWS_PEM_KEY is set"
+          echo "AWS_HOST is set to ${{ vars.AWS_HOST }}"
+
       - name: Deploy to EC2
         env:
           AWS_PEM_KEY: ${{ secrets.AWS_PEM_KEY }}
-          AWS_HOST: ${{ secrets.AWS_HOST }}
+          AWS_HOST: ${{ vars.AWS_HOST }}
         run: |
           echo "${{ secrets.AWS_PEM_KEY }}" > key.pem
           chmod 600 key.pem
-          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ secrets.AWS_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ vars.AWS_HOST }} << 'EOF'
             cd /home/ubuntu/backend_arquitectura_project
             git pull origin main
             pipenv install --python 3.12 --deploy --ignore-pipfile
