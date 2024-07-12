@@ -12,6 +12,8 @@ psycopg2-binary = "*"
 pillow = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
+pyyaml = "*"
+python-decouple = "*"
 
 [dev-packages]
 

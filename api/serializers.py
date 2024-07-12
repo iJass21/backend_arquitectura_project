@@ -117,11 +117,13 @@ class ProjectSerializer(serializers.ModelSerializer):
     project_tags = ProjectTagSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
     portrait_file = FileSerializer(read_only=True)
+    reference = ReferenceSerializer(read_only=True)
+
 
     class Meta:
         model = Project
         fields = [
             'id', 'name', 'owner', 'description', 'created_at', 'active',
-            'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file'
+            'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file', 'reference'
         ]
         read_only_fields = ['id', 'created_at', 'active']

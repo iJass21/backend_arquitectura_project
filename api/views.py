@@ -12,8 +12,9 @@ from rest_framework.permissions import IsAuthenticated
 from api.services.tag_service import TagService
 from api.services.project_tag_service import ProjectTagService
 from rest_framework.parsers import MultiPartParser, FormParser
-
-
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+ 
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
@@ -44,7 +45,26 @@ class UserViewSet(viewsets.ModelViewSet):
         if result:
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
+    @action(detail=False, methods=['get'], url_path='by-email')
+    def user_by_email(self, request):
+        email = request.query_params.get('email')
+        if not email:
+            return Response({"error": "Email parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = self.queryset.filter(email=email).first()
+        if not user:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
+    @action(detail=False, methods=['get'], url_path='me')
+    def current_user(self, request):
+        """
+        Return the current user's profile.
+        """
+        serializer = self.get_serializer(request.user)
+        print(serializer.data)
+        return Response(serializer.data)
     # @action(detail=False, methods=['post'])
     # def register(self, request):
     #     user = UserService.create_user(request.data)
@@ -72,6 +92,54 @@ class LikeViewSet(viewsets.ModelViewSet):
 class ProjectMemberViewSet(viewsets.ModelViewSet):
     queryset = ProjectMember.objects.all()
     serializer_class = ProjectMemberSerializer
+    permission_classes = [IsAuthenticated]
+    def create(self, request, *args, **kwargs):
+        project_id = kwargs.get('project')
+        email = request.data.get('email')  # Get email from request data
+        print(project_id, email)
+        project = Project.objects.get(id=project_id)
+        
+        # Fetch user by email
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+        except ObjectDoesNotExist:
+            return Response({'error': 'User not found with provided email.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Verificar que el usuario no sea el dueño
+        if project.owner.id == user.id:
+            return Response({'error': 'The owner cannot be added as a member.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # Verificar que el usuario no esté ya en el proyecto
+        if ProjectMember.objects.filter(project=project, user=user).exists():
+            return Response({'error': 'User is already a member of this project.'}, status=status.HTTP_409_CONFLICT)
+        
+        serializer = self.get_serializer(data={'project': project_id, 'user': user.id})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        '''def destroy(self, request, project=None, pk=None):
+        project_member = get_object_or_404(ProjectMember, project_id=project, pk=pk)
+        project = project_member.project
+        
+        # Permitir que el usuario elimine su propia membresía o que otros miembros lo hagan, excepto el dueño
+        if request.user == project_member.user or (request.user == project.owner and request.user != project_member.user):
+            project_member.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'error': 'You do not have permission to remove this member'}, status=status.HTTP_403_FORBIDDEN)'''
+    def destroy(self, request, *args, **kwargs):
+        member_id = kwargs.get('pk')
+        print("Member ID:", member_id)
+        try:
+            project_member = ProjectMember.objects.get(id=member_id)
+            project_member.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ProjectMember.DoesNotExist:
+            return Response({'error': 'ProjectMember not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
 
 class ReferenceViewSet(viewsets.ModelViewSet):
     queryset = Reference.objects.all()
@@ -314,3 +382,9 @@ class FileViewSet(viewsets.ViewSet):
 
         serializer = FileSerializer(file)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    @handle_exceptions
+    def list(self, request):
+        files = FileService.getAllFiles()
+        serializer = FileSerializer(files, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
