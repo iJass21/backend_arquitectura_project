@@ -2,6 +2,9 @@
 from api.models import ProjectFile, File
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+import uuid
+from datetime import datetime
+import os
 
 class FileRepository:
     @staticmethod
@@ -14,8 +17,7 @@ class FileRepository:
 
     @staticmethod
     def create(fileData, fileContent):
-        file_path = default_storage.save(fileContent.name, ContentFile(fileContent.read()))
-        file_instance = File.objects.create(route=file_path, active=True)
+        file_instance = FileRepository.saveFile(fileContent)
         project_file_data = {
             'project': fileData['project'],
             'file': file_instance,
@@ -24,6 +26,19 @@ class FileRepository:
             'active': True
         }
         return ProjectFile.objects.create(**project_file_data)
+
+
+    @staticmethod
+    def saveFile(fileContent, random_filename=False):
+        file_name = fileContent.name
+        if random_filename:
+            current_date = datetime.now().strftime("%Y%m%d")
+            file_name = f"{uuid.uuid4().hex}_{current_date}{os.path.splitext(file_name)[1]}"
+
+        relative_path = os.path.join('media/', file_name)
+
+        file_path = default_storage.save(file_name, ContentFile(fileContent.read()))
+        return File.objects.create(route=relative_path, active=True)
     
     @staticmethod
     def delete(fileId):

@@ -2,7 +2,7 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, ProjectViewSet, UserLoginView, UserRegisterView, CommentViewSet, LikeViewSet, ProjectMemberViewSet, ReferenceViewSet, ProjectFileViewSet, TagViewSet, ProjectTagViewSet, ChangePasswordView
+from .views import FileViewSet, ProjectViewSet, UserLoginView, UserRegisterView, CommentViewSet, LikeViewSet, ProjectMemberViewSet, ReferenceViewSet, ProjectFileViewSet, TagViewSet, ProjectTagViewSet, ChangePasswordView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
@@ -13,6 +13,7 @@ router.register(r'likes', LikeViewSet, basename='like')
 router.register(r'project-members', ProjectMemberViewSet, basename='projectmember')
 router.register(r'references', ReferenceViewSet, basename='reference')
 router.register(r'files', ProjectFileViewSet, basename='file')
+router.register(r'files-upload', FileViewSet, basename='file-upload')
 router.register(r'tags', TagViewSet, basename='tag')
 router.register(r'project-tags', ProjectTagViewSet, basename='projecttag')
 

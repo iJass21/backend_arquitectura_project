@@ -11,6 +11,7 @@ from api.decorators import handle_exceptions
 from rest_framework.permissions import IsAuthenticated
 from api.services.tag_service import TagService
 from api.services.project_tag_service import ProjectTagService
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 
@@ -147,10 +148,16 @@ class ProjectFileViewSet(viewsets.ViewSet):
 
     @handle_exceptions
     def create(self, request):
+        print(request.data)
         serializer = ProjectFileSerializer(data=request.data)
         if serializer.is_valid():
-            file = FileService.uploadFile(serializer.validated_data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            print(serializer.validated_data)
+            data = serializer.validated_data
+            data['file_id'] = request.data['file']
+            projectfile = FileService.saveFileProject(data)
+            serializer_data = ProjectFileSerializer(projectfile)
+            # file = FileService.uploadFile(serializer.validated_data)
+            return Response(serializer_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @handle_exceptions
@@ -295,3 +302,14 @@ class TagViewSet(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         TagService.delete_tag(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class FileViewSet(viewsets.ViewSet):
+    parser_classes = [MultiPartParser, FormParser]
+    @handle_exceptions
+    def create(self, request):
+        file_obj = request.FILES['file']
+        file = FileService.saveFile(file_obj) 
+        print(file)
+
+        serializer = FileSerializer(file)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
