@@ -12,9 +12,9 @@ psycopg2-binary = "*"
 pillow = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
-python-decouple = "*"
+pyyaml = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.12"
+python_version = "3.11"
