@@ -78,7 +78,7 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
 class ReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reference
-        fields = ['id', 'project', 'description', 'created_at', 'active']
+        fields = ['id', 'project', 'description', 'created_at', 'active','autor']
         read_only_fields = ['id', 'created_at', 'active']
 
 class FileSerializer(serializers.ModelSerializer):
@@ -126,14 +126,15 @@ class ProjectSerializer(serializers.ModelSerializer):
     project_tags = ProjectTagSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
     portrait_file = FileSerializer(read_only=True)
-    reference = ReferenceSerializer(read_only=True)
-    #project_tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, write_only=True)
+    references = ReferenceSerializer(read_only=True, many=True)
+
 
     class Meta:
         model = Project
         fields = [
             'id', 'name', 'owner', 'description', 'created_at', 'active',
-            'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file', 'reference', 'project_tags'
+            'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file', 'references', 'project_tags'
+
         ]
         read_only_fields = ['id', 'created_at', 'active']
 
