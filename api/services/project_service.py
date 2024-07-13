@@ -2,7 +2,7 @@
 from api.repositories.project_repository import ProjectRepository
 from api.services.comment_service import CommentsService
 from api.services.file_service import FileService
-from api.models import Project, User, File, ProjectFile
+from api.models import Project, User, File, ProjectFile, ProjectTag, Tag
 import uuid
 from datetime import datetime
 import os
@@ -15,25 +15,17 @@ class ProjectService:
 
     @staticmethod
     def createProject(projectData):
-        # projectData = projectData.copy()
-        # owner_id = projectData['owner']
-        # owner = User.objects.get(id=owner_id)
-        # projectData['owner'] = owner
-        return ProjectRepository.create(projectData)
+        tags = projectData.pop('project_tags', [])
+        project = ProjectRepository.create(projectData)
+        ProjectService._update_project_tags(project, tags)
+        return project
 
     @staticmethod
     def updateProject(projectId, projectData):
-        projectData = projectData.copy()
-        if 'owner' in projectData:
-            owner_id = projectData.pop('owner')
-            owner = User.objects.get(id=owner_id)
-            projectData['owner'] = owner
-        if 'portrait_file' in projectData:
-            portrait_file_id = projectData.pop('portrait_file')
-            projectData['portrait_file_id'] = portrait_file_id  # Asignar el ID del archivo en lugar del objeto
-        return ProjectRepository.update(projectId, projectData)
-
-
+        tags = projectData.pop('project_tags', [])
+        project = ProjectRepository.update(projectId, projectData)
+        ProjectService._update_project_tags(project, tags)
+        return project
 
     @staticmethod
     def deleteProject(projectId):
@@ -77,7 +69,6 @@ class ProjectService:
             active=True
         )
         return project_file
-
     @staticmethod
     def getProjectFiles(projectId):
         return FileService.getProjectFiles(projectId)
@@ -95,3 +86,10 @@ class ProjectService:
     @staticmethod
     def getProjectById(projectId):
         return ProjectRepository.findById(projectId)
+
+    @staticmethod
+    def _update_project_tags(project, tags):
+        ProjectTag.objects.filter(project=project).delete()
+        for tag_id in tags:
+            tag = Tag.objects.get(id=tag_id)
+            ProjectTag.objects.create(project=project, tag=tag)

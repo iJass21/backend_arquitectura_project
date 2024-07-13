@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import  Project, Comment, Like, ProjectMember, Reference, File, ProjectFile, Tag, ProjectTag
+from .services.project_service import ProjectService
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -105,12 +106,20 @@ class TagSerializer(serializers.ModelSerializer):
         return value
 
 class ProjectTagSerializer(serializers.ModelSerializer):
-    tag = TagSerializer(read_only=True)
     class Meta:
         model = ProjectTag
         fields = ['id', 'project', 'tag', 'active']
         read_only_fields = ['id', 'active']
-        
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['tag'] = {
+            'id': instance.tag.id,
+            'name': instance.tag.name,
+        }
+        return representation
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     project_files = ProjectFileSerializer(many=True, read_only=True)
     project_members = ProjectMemberSerializer(many=True, read_only=True)
@@ -118,12 +127,13 @@ class ProjectSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True)
     portrait_file = FileSerializer(read_only=True)
     reference = ReferenceSerializer(read_only=True)
+    #project_tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, write_only=True)
 
     class Meta:
         model = Project
         fields = [
             'id', 'name', 'owner', 'description', 'created_at', 'active',
-            'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file', 'reference'
+            'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file', 'reference', 'project_tags'
         ]
         read_only_fields = ['id', 'created_at', 'active']
 
@@ -133,5 +143,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         if portrait_file_data:
             instance.portrait_file = portrait_file_data
 
+        tags = validated_data.pop('project_tags', [])
         instance = super().update(instance, validated_data)
+        ProjectService._update_project_tags(instance, tags)
         return instance
