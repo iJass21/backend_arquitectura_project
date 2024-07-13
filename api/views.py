@@ -148,6 +148,27 @@ class ReferenceViewSet(viewsets.ModelViewSet):
 class ProjectTagViewSet(viewsets.ModelViewSet):
     queryset = ProjectTag.objects.all()
     serializer_class = ProjectTagSerializer
+    permission_classes = [IsAuthenticated]
+
+    @handle_exceptions
+    def create(self, request):
+        serializer = ProjectTagSerializer(data=request.data)
+        if serializer.is_valid():
+            project_tag = ProjectTagService.add_project_tag(serializer.validated_data)
+            return Response(ProjectTagSerializer(project_tag).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @handle_exceptions
+    def destroy(self, request, pk=None):
+        ProjectTagService.delete_project_tag(pk)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['get'])
+    @handle_exceptions
+    def tags_by_project(self, request, pk=None):
+        tags = ProjectTagService.get_project_tags(pk)
+        serializer = ProjectTagSerializer(tags, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 # Vista para registrar usuario
 class UserRegisterView(viewsets.ViewSet):
@@ -243,8 +264,7 @@ class ProjectFileViewSet(viewsets.ViewSet):
 class ProjectViewSet(viewsets.ViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]  # Protege todas las rutas de este ViewSet
-
+    permission_classes = [IsAuthenticated]
 
     @handle_exceptions
     def list(self, request):
@@ -256,21 +276,35 @@ class ProjectViewSet(viewsets.ViewSet):
     def create(self, request):
         data = request.data.copy()
         if 'owner' not in data:
-            data['owner'] = request.user.id  # Asigna el ID del usuario autenticado al campo 'owner' del serializer
+            data['owner'] = request.user.id  # Set the owner to the authenticated user
         serializer = ProjectSerializer(data=data)
         if serializer.is_valid():
-            full_data = serializer.validated_data
-            full_data['portrait_file_id'] = data['portrait_file']
-            project = ProjectService.createProject(full_data)
+            project = ProjectService.createProject(serializer.validated_data)
             return Response(ProjectSerializer(project).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @handle_exceptions
     def update(self, request, pk=None):
-        serializer = ProjectSerializer(data=request.data)
+        try:
+            instance = Project.objects.get(pk=pk)
+        except Project.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        data = request.data.copy()
+
+        # Handle portrait_file separately
+        portrait_file_id = data.pop('portrait_file', None)
+        if portrait_file_id:
+            try:
+                portrait_file = File.objects.get(id=portrait_file_id)
+                instance.portrait_file = portrait_file
+            except File.DoesNotExist:
+                return Response({"portrait_file": "Invalid file ID provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ProjectSerializer(instance, data=data, partial=True)
         if serializer.is_valid():
             project = ProjectService.updateProject(pk, serializer.validated_data)
-            return Response(ProjectSerializer(project).data)
+            return Response(ProjectSerializer(project).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @handle_exceptions
@@ -290,11 +324,9 @@ class ProjectViewSet(viewsets.ViewSet):
         if request.method == 'POST':
             data = request.data.copy()
             data['project'] = pk  # Set the project of the comment
-            data['user'] = request.user # Set the user of the comment
+            data['user'] = request.user.id  # Set the user of the comment
             serializer = CommentSerializer(data=data)
             if serializer.is_valid():
-                serializer.validated_data['user'] = request.user
-                print(serializer.validated_data)
                 comment = CommentsService.addComment(pk, serializer.validated_data)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -357,6 +389,7 @@ class TagViewSet(viewsets.ViewSet):
     def list(self, request):
         tags = TagService.get_all_tags()
         serializer = TagSerializer(tags, many=True)
+        print(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @handle_exceptions

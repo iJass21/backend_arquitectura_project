@@ -6,9 +6,7 @@ class ProjectTagService:
     def add_project_tag(project_tag_data):
         project = project_tag_data.pop('project')
         tag = project_tag_data.pop('tag')
-        tag = TagRepository.find_by_id(tag)
         project_tag_data['tag'] = tag
-        project = ProjectRepository.findById(project)
         project_tag_data['project'] = project
         return ProjectTagRepository.create(project_tag_data)
 
