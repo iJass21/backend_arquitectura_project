@@ -77,7 +77,7 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
 class ReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reference
-        fields = ['id', 'project', 'description', 'created_at', 'active','autor']
+        fields = ['id', 'project', 'titulo' ,'description', 'created_at', 'active', 'autor']
         read_only_fields = ['id', 'created_at', 'active']
 
 class FileSerializer(serializers.ModelSerializer):
