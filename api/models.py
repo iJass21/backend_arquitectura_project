@@ -107,6 +107,7 @@ class ProjectMember(models.Model):
 # References Model
 class Reference(models.Model):
     project = models.ForeignKey(Project, related_name='references', on_delete=models.CASCADE)
+    titulo = models.TextField(default='Sin titulo', null=True, blank=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
