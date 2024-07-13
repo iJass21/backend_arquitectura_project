@@ -110,6 +110,7 @@ class Reference(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
+    autor = models.TextField(default='Autor desconocido', null=True, blank=True)
 
     def __str__(self):
         return f'Reference for {self.project.name}'
