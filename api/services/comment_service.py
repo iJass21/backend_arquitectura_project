@@ -6,7 +6,11 @@ class CommentsService:
     @staticmethod
     def addComment(project_id, data):
         project = Project.objects.get(id=project_id)
-        # user = User.objects.get(id=data['user'])
+        #user = User.objects.get(id=data['user'])
+        print("project id", project_id)
+        print("project data", project)
+        print("comment data", data)
+        #print("user test", user)
         comment = Comment.objects.create(
             project=project,
             user=data['user'],
