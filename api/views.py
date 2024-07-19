@@ -144,6 +144,10 @@ class ProjectMemberViewSet(viewsets.ModelViewSet):
 class ReferenceViewSet(viewsets.ModelViewSet):
     queryset = Reference.objects.all()
     serializer_class = ReferenceSerializer
+    def create(self, request):
+        user = Reference.objects.create(**request.data)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ProjectTagViewSet(viewsets.ModelViewSet):
     queryset = ProjectTag.objects.all()
