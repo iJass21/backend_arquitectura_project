@@ -13,7 +13,6 @@ pillow = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
 pyyaml = "*"
-python-decouple = "*"
 decouple = "*"
 
 [dev-packages]
