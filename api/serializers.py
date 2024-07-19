@@ -131,15 +131,13 @@ class ProjectSerializer(serializers.ModelSerializer):
     project_tags = ProjectTagSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
     portrait_file = FileSerializer(read_only=True)
-    references = ReferenceSerializer(read_only=True, many=True)
-
+    references = ReferenceSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
         fields = [
             'id', 'name', 'owner', 'description', 'created_at', 'active',
-            'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file', 'references', 'project_tags'
-
+            'project_files', 'project_members', 'project_tags', 'comments', 'portrait_file', 'references'
         ]
         read_only_fields = ['id', 'created_at', 'active']
 
@@ -153,3 +151,4 @@ class ProjectSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         ProjectService._update_project_tags(instance, tags)
         return instance
+

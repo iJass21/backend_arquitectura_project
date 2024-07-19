@@ -241,7 +241,7 @@ class ProjectFileViewSet(viewsets.ViewSet):
         print(request.data)
         serializer = ProjectFileSerializer(data=request.data)
         if serializer.is_valid():
-            print(serializer.validated_data)
+            print("serializer.validated_data", serializer.validated_data)
             data = serializer.validated_data
             data['file_id'] = request.data['file']
             projectfile = FileService.saveFileProject(data)
@@ -304,7 +304,7 @@ class ProjectViewSet(viewsets.ViewSet):
 
         serializer = ProjectSerializer(instance, data=data, partial=True)
         if serializer.is_valid():
-            project = ProjectService.updateProject(pk, serializer.validated_data)
+            project = serializer.save()
             return Response(ProjectSerializer(project).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
