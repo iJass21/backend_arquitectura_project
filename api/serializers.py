@@ -57,12 +57,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    
+
     class Meta:
         model = Comment
         fields = ['id', 'project', 'user', 'content', 'created_at', 'active']
-        read_only_fields = ['id', 'created_at', 'active', 'user']
+        read_only_fields = ['id', 'created_at', 'active']
 
+    def create(self, validated_data):
+        request = self.context.get('request', None)
+        if request is not None:
+            validated_data['user'] = request.user
+        return super().create(validated_data)
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like

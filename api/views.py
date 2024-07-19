@@ -90,14 +90,23 @@ class LikeViewSet(viewsets.ModelViewSet):
     serializer_class = LikeSerializer
 
 class ProjectMemberViewSet(viewsets.ModelViewSet):
-    queryset = ProjectMember.objects.all()
     serializer_class = ProjectMemberSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        project_id = self.kwargs.get('project')
+        if project_id:
+            return ProjectMember.objects.filter(project_id=project_id)
+        return ProjectMember.objects.none()
+
     def create(self, request, *args, **kwargs):
         project_id = kwargs.get('project')
         email = request.data.get('email')  # Get email from request data
         print(project_id, email)
-        project = Project.objects.get(id=project_id)
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found.'}, status=status.HTTP_404_NOT_FOUND)
         
         # Fetch user by email
         User = get_user_model()
@@ -106,11 +115,11 @@ class ProjectMemberViewSet(viewsets.ModelViewSet):
         except ObjectDoesNotExist:
             return Response({'error': 'User not found with provided email.'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Verificar que el usuario no sea el dueño
+        # Verify that the user is not the owner
         if project.owner.id == user.id:
             return Response({'error': 'The owner cannot be added as a member.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Verificar que el usuario no esté ya en el proyecto
+        # Verify that the user is not already in the project
         if ProjectMember.objects.filter(project=project, user=user).exists():
             return Response({'error': 'User is already a member of this project.'}, status=status.HTTP_409_CONFLICT)
         
@@ -120,15 +129,6 @@ class ProjectMemberViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        '''def destroy(self, request, project=None, pk=None):
-        project_member = get_object_or_404(ProjectMember, project_id=project, pk=pk)
-        project = project_member.project
-        
-        # Permitir que el usuario elimine su propia membresía o que otros miembros lo hagan, excepto el dueño
-        if request.user == project_member.user or (request.user == project.owner and request.user != project_member.user):
-            project_member.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({'error': 'You do not have permission to remove this member'}, status=status.HTTP_403_FORBIDDEN)'''
     def destroy(self, request, *args, **kwargs):
         member_id = kwargs.get('pk')
         print("Member ID:", member_id)
@@ -201,6 +201,7 @@ class CommentViewSet(viewsets.ViewSet):
     @handle_exceptions
     def create(self, request):
         data = request.data.copy()
+
         data['user'] = request.user.id  # Set the owner of the comment
         serializer = CommentSerializer(data=data)
         if serializer.is_valid():
@@ -323,11 +324,14 @@ class ProjectViewSet(viewsets.ViewSet):
     def comments(self, request, pk=None):
         if request.method == 'POST':
             data = request.data.copy()
+            print("data:", data)
             data['project'] = pk  # Set the project of the comment
             data['user'] = request.user.id  # Set the user of the comment
-            serializer = CommentSerializer(data=data)
+            print("data:", data)
+            serializer = CommentSerializer(data=data, context={'request': request})
             if serializer.is_valid():
-                comment = CommentsService.addComment(pk, serializer.validated_data)
+                print("serializer:", serializer.validated_data)
+                comment = serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.method == 'GET':
